@@ -1,10 +1,11 @@
 from collections import defaultdict
-from custom_fragment import FragmentPeak
-from custom_fragment import find_frags_in_range
+import sys, os
+from create_spectral_decoys.custom_fragment import FragmentPeak
+from create_spectral_decoys.custom_fragment import find_frags_in_range
 from matchms import Spikes, Spectrum
 import numpy as np
 from matchms.filtering import normalize_intensities 
-from custom_filtering import are_peaks_similar
+from create_spectral_decoys.custom_filtering import are_peaks_similar
 from adduct_calculator.adduct_rules import AdductTransformer
 from molmass import Formula
 
@@ -24,7 +25,6 @@ class AdductAndMassLibrary:
         for a in adducts: 
             masslibraries[a] = []
         for a in adducts:
-            print("...", a)
             for mol in chemical_formulas:
                 f = Formula(mol)
                 mass = t.mass2ion(f.mass, a)
@@ -37,7 +37,7 @@ class AdductAndMassLibrary:
     def is_mass_here(self, mass, adduct):
         ishere = False
         lib = self.masslibraries[adduct]  
-        tolerance = 0.002
+        tolerance = 0.02
         x = FragmentPeak(mass-tolerance, None, None)
         y = FragmentPeak(mass + tolerance, None, None)
         similarpeaks = find_frags_in_range(lib, x, y)
@@ -73,15 +73,15 @@ class AdductAndMassLibrary:
     def return_noise_filtered_spectrum(self, spectrum):
        # spectrum.plot()
         md = spectrum.metadata.copy()
-        print("Number of peaks on entry:", len(spectrum.peaks))
+#        print("Number of peaks on entry:", len(spectrum.peaks))
         mzlist, intensitylist = self.filter_out_noisy_peaks(spectrum)
         mzlist = np.asarray(mzlist, dtype=float)
         intensitylist = np.asarray(intensitylist, dtype=float)
         spec = Spectrum(mzlist, intensitylist, md)
         spec = normalize_intensities(spec)
-        print("number on exit", len(spec.peaks.mz))
+#        print("number on exit", len(spec.peaks.mz))
        # spec.plot()
         return spec
                 
                          
-        print("Number of peaks on exit:", len(spectrum.peaks)) 
+#        print("Number of peaks on exit:", len(spectrum.peaks)) 
